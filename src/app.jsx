@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// Advanced Date Parsing (no changes here)
+// Advanced Date Parsing
 const parseDate = (dateString) => {
     if (!dateString) return null;
     const months = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
@@ -178,7 +178,9 @@ export default function App() {
                             if (!youtubeLink) {
                                 youtubeLink = findEmbeddedYouTubeLink(postDoc);
                             }
-                            foundJobs.push({ title, link: result.url, lastDate, youtubeLink });
+                            if (!foundJobs.some(job => job.link === result.url)) {
+                                foundJobs.push({ title, link: result.url, lastDate, youtubeLink });
+                            }
                         }
                     }
                 }
