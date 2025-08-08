@@ -114,6 +114,12 @@ export default function App() {
         setPage(1);
 
         try {
+            // UPDATED: Smart URL Handling
+            let fullUrl = url.trim();
+            if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+                fullUrl = 'https://' + fullUrl;
+            }
+
             let channelVideos = [];
             const useApi = youtubeHandle && apiKey;
             if (useApi) {
@@ -122,7 +128,7 @@ export default function App() {
             }
 
             setStatus(`Step ${useApi ? '2' : '1'}/${useApi ? '4' : '3'}: Fetching main page...`);
-            const mainHtml = await fetchHtml(url);
+            const mainHtml = await fetchHtml(fullUrl);
             const parser = new DOMParser();
             const mainDoc = parser.parseFromString(mainHtml, 'text/html');
             const postLinks = new Set();
@@ -130,9 +136,9 @@ export default function App() {
             mainDoc.querySelectorAll('article a, .post a, .job-listing a, h2 a, h3 a').forEach(link => {
                 let href = link.href;
                 if (href && !href.startsWith('http')) {
-                    try { href = new URL(href, url).href; } catch (e) { return; }
+                    try { href = new URL(href, fullUrl).href; } catch (e) { return; }
                 }
-                if (href && href.startsWith(new URL(url).origin) && jobUrlKeywords.some(keyword => link.innerText.toLowerCase().includes(keyword) || href.toLowerCase().includes(keyword))) {
+                if (href && href.startsWith(new URL(fullUrl).origin) && jobUrlKeywords.some(keyword => link.innerText.toLowerCase().includes(keyword) || href.toLowerCase().includes(keyword))) {
                     postLinks.add(href);
                 }
             });
@@ -199,18 +205,25 @@ export default function App() {
         }
     };
 
+    // UPDATED: Enhanced sharing format with bolding and emojis
     const getShareText = (job) => {
-        let text = `Post: ${job.title}\nLast date: ${job.lastDate.toLocaleDateString('en-GB')}`;
-        if (job.youtubeLink) text += `\nVideo Link: ${job.youtubeLink}`;
-        text += `\nApply Now: ${job.link}`;
+        let text = `📝 *Post name:* ${job.title}\n`;
+        text += `📅 *Last date:* ${job.lastDate.toLocaleDateString('en-GB')}\n`;
+        if (job.youtubeLink) {
+            text += `🎥 *Video Link:* ${job.youtubeLink}\n`;
+        }
+        text += `🔗 *Apply Link:* ${job.link}`;
         return text;
     };
+
     const getWhatsAppLink = (job) => `https://wa.me/?text=${encodeURIComponent(getShareText(job))}`;
+    
     const handleCopy = (job) => {
         navigator.clipboard.writeText(getShareText(job));
         setCopiedJob(job.link);
         setTimeout(() => setCopiedJob(null), 2000);
     };
+
     const handleNativeShare = (job) => {
         if (navigator.share) {
             navigator.share({ title: job.title, text: getShareText(job), url: job.link });
@@ -232,7 +245,7 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Website to Scan</label>
-                        <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/careers" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required />
+                        <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="example.com/careers" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">YouTube Channel Handle (Optional)</label>
