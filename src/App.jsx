@@ -209,7 +209,7 @@ export default function App() {
     const getShareText = (job) => {
         let text = `📝 *Post name:* ${job.title}\n`;
         text += `📅 *Last date:* ${job.lastDate.toLocaleDateString('en-GB')}\n`;
-        text += `🔗 *Apply Link:* ${job.link}`;
+        text += `🔗 *Apply Link:* ${job.link}\n`;
         if (job.youtubeLink) {
             text += `🎥 *Video Link:* ${job.youtubeLink}\n`;
         }
